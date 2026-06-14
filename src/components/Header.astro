@@ -203,3 +203,107 @@ const shouldRenderSearch =
 	initSidebarToggles();
 	document.addEventListener('astro:page-load', initSidebarToggles);
 </script>
+
+<script>
+	// Всплывающие карточки «Что это?» для аббревиатур (см. rehypeGlossary + glossary.js).
+	import { glossary } from '../data/glossary.js';
+
+	function initGlossary() {
+		if (window.__eduGlossaryReady) return;
+		window.__eduGlossaryReady = true;
+
+		const defs = new Map(glossary.map((g) => [g.term, g.def]));
+		let pop = null;
+		let pinned = false;
+		let currentEl = null;
+
+		function ensurePop() {
+			if (pop) return pop;
+			pop = document.createElement('div');
+			pop.className = 'glossary-popover';
+			pop.setAttribute('role', 'dialog');
+			pop.innerHTML =
+				'<button type="button" class="glossary-popover__close" aria-label="Закрыть">×</button>' +
+				'<div class="glossary-popover__title">Что это?</div>' +
+				'<div class="glossary-popover__body"><span class="glossary-popover__term"></span><span class="glossary-popover__def"></span></div>';
+			document.body.appendChild(pop);
+			pop.querySelector('.glossary-popover__close').addEventListener('click', (e) => {
+				e.stopPropagation();
+				hide();
+			});
+			return pop;
+		}
+
+		function position(el) {
+			const r = el.getBoundingClientRect();
+			const pw = pop.offsetWidth;
+			const ph = pop.offsetHeight;
+			let left = r.left;
+			if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+			if (left < 12) left = 12;
+			let top = r.bottom + 8;
+			if (top + ph > window.innerHeight - 12) top = r.top - ph - 8;
+			if (top < 12) top = 12;
+			pop.style.left = left + 'px';
+			pop.style.top = top + 'px';
+		}
+
+		function show(el) {
+			const term = el.getAttribute('data-term');
+			const def = defs.get(term);
+			if (!def) return;
+			const p = ensurePop();
+			p.querySelector('.glossary-popover__term').textContent = term + ' — ';
+			p.querySelector('.glossary-popover__def').textContent = def;
+			p.style.display = 'block';
+			position(el);
+		}
+
+		function hide() {
+			if (pop) pop.style.display = 'none';
+			pinned = false;
+			currentEl = null;
+		}
+
+		document.addEventListener('click', (e) => {
+			const term = e.target.closest && e.target.closest('.glossary-term');
+			if (term) {
+				e.preventDefault();
+				if (pinned && currentEl === term) {
+					hide();
+				} else {
+					show(term);
+					pinned = true;
+					currentEl = term;
+				}
+				return;
+			}
+			if (pop && pop.style.display === 'block' && !(e.target.closest && e.target.closest('.glossary-popover'))) {
+				hide();
+			}
+		});
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') hide();
+		});
+
+		if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+			document.addEventListener('mouseover', (e) => {
+				const t = e.target.closest && e.target.closest('.glossary-term');
+				if (t && !pinned) {
+					show(t);
+					currentEl = t;
+				}
+			});
+			document.addEventListener('mouseout', (e) => {
+				const t = e.target.closest && e.target.closest('.glossary-term');
+				if (t && !pinned) hide();
+			});
+		}
+
+		window.addEventListener('scroll', () => { if (!pinned) hide(); }, { passive: true });
+	}
+
+	initGlossary();
+	document.addEventListener('astro:page-load', initGlossary);
+</script>

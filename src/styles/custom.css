@@ -30,6 +30,59 @@
 	margin: 1.25rem 0;
 }
 
+/* ===== Подсказки по аббревиатурам «Что это?» ===== */
+.glossary-term {
+	text-decoration: none;
+	border-bottom: 1px dashed var(--sl-color-text-accent);
+	cursor: help;
+	font-style: inherit;
+}
+.glossary-term:hover,
+.glossary-term:focus-visible {
+	border-bottom-style: solid;
+	outline: none;
+}
+
+.glossary-popover {
+	position: fixed;
+	z-index: 100;
+	display: none;
+	max-width: 320px;
+	padding: 0.8rem 1rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.5rem;
+	background: var(--sl-color-bg-nav);
+	color: var(--sl-color-text);
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+	font-size: var(--sl-text-sm);
+	line-height: 1.5;
+}
+.glossary-popover__title {
+	font-weight: 600;
+	margin-bottom: 0.35rem;
+	padding-inline-end: 1rem;
+	color: var(--sl-color-white);
+}
+.glossary-popover__term {
+	color: var(--sl-color-text-accent);
+	font-weight: 600;
+}
+.glossary-popover__close {
+	position: absolute;
+	top: 0.3rem;
+	inset-inline-end: 0.45rem;
+	border: 0;
+	background: transparent;
+	color: var(--sl-color-gray-3);
+	font-size: 1.15rem;
+	line-height: 1;
+	padding: 0.15rem 0.3rem;
+	cursor: pointer;
+}
+.glossary-popover__close:hover {
+	color: var(--sl-color-white);
+}
+
 /* ===== Сворачивание боковых панелей (только десктоп; мобайл не трогаем) =====
    Кнопки в шапке (см. src/components/Header.astro) ставят на <html> атрибуты
    data-user-hide-left / data-user-hide-right. Здесь мы прячем нужную панель и
