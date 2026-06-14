@@ -26,6 +26,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Build with Astro
         uses: withastro/action@v3
+        with:
+          # Astro 6 требует Node >= 22.12; по умолчанию action берёт Node 20
+          node-version: 22
         # withastro/action сам определяет пакетный менеджер (npm),
         # ставит зависимости, запускает `astro build` и загружает
         # артефакт Pages из каталога ./dist
