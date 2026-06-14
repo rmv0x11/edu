@@ -1,0 +1,31 @@
+/* Фирменная фиолетовая палитра в тон логотипу и hero-иллюстрации. */
+
+/* Тёмная тема (по умолчанию) */
+:root {
+	--sl-color-accent-low: #241a52;
+	--sl-color-accent: #7c4dff;
+	--sl-color-accent-high: #d6cbff;
+}
+
+/* Светлая тема */
+:root[data-theme='light'] {
+	--sl-color-accent-low: #e9e0ff;
+	--sl-color-accent: #6d28d9;
+	--sl-color-accent-high: #2b1065;
+}
+
+/* Чуть крупнее «воздуха» в карточках на лендинге */
+.sl-link-card {
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.sl-link-card:hover {
+	border-color: var(--sl-color-accent);
+	box-shadow: 0 0 0 1px var(--sl-color-accent);
+}
+
+/* Диаграммы Mermaid по центру и с отступами */
+.mermaid {
+	display: flex;
+	justify-content: center;
+	margin: 1.25rem 0;
+}
