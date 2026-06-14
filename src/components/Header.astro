@@ -212,7 +212,7 @@ const shouldRenderSearch =
 		if (window.__eduGlossaryReady) return;
 		window.__eduGlossaryReady = true;
 
-		const defs = new Map(glossary.map((g) => [g.term, g.def]));
+		const defs = new Map(glossary.map((g) => [g.term, g]));
 		let pop = null;
 		let pinned = false;
 		let currentEl = null;
@@ -225,7 +225,8 @@ const shouldRenderSearch =
 			pop.innerHTML =
 				'<button type="button" class="glossary-popover__close" aria-label="Закрыть">×</button>' +
 				'<div class="glossary-popover__title">Что это?</div>' +
-				'<div class="glossary-popover__body"><span class="glossary-popover__term"></span><span class="glossary-popover__def"></span></div>';
+				'<div class="glossary-popover__head"><span class="glossary-popover__term"></span><span class="glossary-popover__full"></span></div>' +
+				'<div class="glossary-popover__def"></div>';
 			document.body.appendChild(pop);
 			pop.querySelector('.glossary-popover__close').addEventListener('click', (e) => {
 				e.stopPropagation();
@@ -250,11 +251,12 @@ const shouldRenderSearch =
 
 		function show(el) {
 			const term = el.getAttribute('data-term');
-			const def = defs.get(term);
-			if (!def) return;
+			const entry = defs.get(term);
+			if (!entry) return;
 			const p = ensurePop();
-			p.querySelector('.glossary-popover__term').textContent = term + ' — ';
-			p.querySelector('.glossary-popover__def').textContent = def;
+			p.querySelector('.glossary-popover__term').textContent = term;
+			p.querySelector('.glossary-popover__full').textContent = entry.full ? ' — ' + entry.full : '';
+			p.querySelector('.glossary-popover__def').textContent = entry.def;
 			p.style.display = 'block';
 			position(el);
 		}

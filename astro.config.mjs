@@ -2,6 +2,8 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import mermaid from 'astro-mermaid';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { glossary } from './src/data/glossary.js';
 
 const BASE = '/edu';
@@ -20,42 +22,52 @@ function rehypeGlossary() {
 	const re = new RegExp('(?<![\\p{L}\\p{N}-])(' + pattern + ')(?![\\p{L}\\p{N}-])', 'gu');
 	const SKIP = new Set(['code', 'pre', 'a', 'abbr', 'script', 'style', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
-	/** @param {string} value */
-	function splitText(value) {
+	// Оборачиваем только ПЕРВОЕ вхождение каждого термина на странице: множество seen
+	// заводится один раз на файл и передаётся в обход.
+	/** @param {string} value @param {Set<string>} seen */
+	function splitText(value, seen) {
 		re.lastIndex = 0;
 		let m;
 		let last = 0;
 		let out = null;
 		while ((m = re.exec(value)) !== null) {
+			const t = m[1];
+			if (seen.has(t)) continue; // повтор — оставляем как обычный текст
 			if (!out) out = [];
 			if (m.index > last) out.push({ type: 'text', value: value.slice(last, m.index) });
 			out.push({
 				type: 'element',
 				tagName: 'abbr',
-				properties: { className: ['glossary-term'], dataTerm: m[1], tabIndex: 0 },
-				children: [{ type: 'text', value: m[1] }],
+				properties: { className: ['glossary-term'], dataTerm: t, tabIndex: 0 },
+				children: [{ type: 'text', value: t }],
 			});
-			last = m.index + m[1].length;
+			seen.add(t);
+			last = m.index + t.length;
 		}
 		if (out && last < value.length) out.push({ type: 'text', value: value.slice(last) });
 		return out;
 	}
 
-	/** @param {any} node */
-	function walk(node) {
-		if (node.type === 'element' && SKIP.has(node.tagName)) return;
+	/** @param {any} node @param {Set<string>} seen */
+	function walk(node, seen) {
+		if (node.type === 'element') {
+			if (SKIP.has(node.tagName)) return;
+			// не трогаем формулы, отрендеренные KaTeX (классы katex / math…)
+			const cls = node.properties && node.properties.className;
+			if (Array.isArray(cls) && cls.some((c) => typeof c === 'string' && (c === 'katex' || c === 'math' || c.startsWith('katex') || c.startsWith('math-')))) return;
+		}
 		const children = node.children;
 		if (!Array.isArray(children)) return;
 		for (let i = 0; i < children.length; i++) {
 			const child = children[i];
 			if (child.type === 'text') {
-				const replaced = splitText(child.value);
+				const replaced = splitText(child.value, seen);
 				if (replaced) {
 					children.splice(i, 1, ...replaced);
 					i += replaced.length - 1;
 				}
 			} else if (child.type === 'element') {
-				walk(child);
+				walk(child, seen);
 			}
 		}
 	}
@@ -63,7 +75,7 @@ function rehypeGlossary() {
 	return (/** @type {any} */ tree, /** @type {any} */ file) => {
 		const p = (file && (file.path || (file.history && file.history[0]))) || '';
 		if (typeof p === 'string' && p.includes('glossary')) return;
-		walk(tree);
+		walk(tree, new Set());
 	};
 }
 
@@ -106,7 +118,10 @@ export default defineConfig({
 	site: 'https://rmv0x11.github.io',
 	base: BASE,
 	markdown: {
-		rehypePlugins: [[rehypeBasePrefix, { base: BASE }], rehypeGlossary],
+		// remark-math парсит $...$ и $$...$$; rehype-katex рендерит их в HTML KaTeX.
+		// Глоссарий идёт последним и пропускает разметку KaTeX (см. walk ниже).
+		remarkPlugins: [remarkMath],
+		rehypePlugins: [[rehypeBasePrefix, { base: BASE }], rehypeKatex, rehypeGlossary],
 	},
 	integrations: [
 		// astro-mermaid ОБЯЗАТЕЛЬНО до starlight() — иначе Starlight перехватит
@@ -137,7 +152,7 @@ export default defineConfig({
 				baseUrl: 'https://github.com/rmv0x11/edu/edit/main/',
 			},
 			lastUpdated: true,
-			customCss: ['./src/styles/custom.css'],
+			customCss: ['katex/dist/katex.min.css', './src/styles/custom.css'],
 			components: {
 				// Шапка с кнопками сворачивания левой/правой панели
 				Header: './src/components/Header.astro',
@@ -183,6 +198,83 @@ export default defineConfig({
 						{ label: '9. Безопасность контейнеров', slug: 'containerization/security' },
 						{ label: '10. Оркестрация и Kubernetes', slug: 'containerization/orchestration' },
 						{ label: '11. Глоссарий и ссылки', slug: 'containerization/glossary' },
+					],
+				},
+				{
+					label: 'Линейная алгебра',
+					items: [
+						{ label: 'Обзор', slug: 'linear-algebra' },
+						{ label: '1. Векторы и операции', slug: 'linear-algebra/vectors' },
+						{ label: '2. Матрицы', slug: 'linear-algebra/matrices' },
+						{ label: '3. Системы уравнений', slug: 'linear-algebra/linear-systems' },
+						{ label: '4. Собственные значения', slug: 'linear-algebra/eigenvalues' },
+						{ label: '5. Разложения и ML', slug: 'linear-algebra/decompositions' },
+						{ label: '★ Задания', slug: 'linear-algebra/exercises' },
+					],
+				},
+				{
+					label: 'Матанализ и оптимизация',
+					items: [
+						{ label: 'Обзор', slug: 'calculus' },
+						{ label: '1. Производные', slug: 'calculus/derivatives' },
+						{ label: '2. Градиент', slug: 'calculus/gradient' },
+						{ label: '3. Цепное правило', slug: 'calculus/chain-rule' },
+						{ label: '4. Градиентный спуск', slug: 'calculus/gradient-descent' },
+						{ label: '★ Задания', slug: 'calculus/exercises' },
+					],
+				},
+				{
+					label: 'Теория вероятностей',
+					items: [
+						{ label: 'Обзор', slug: 'probability' },
+						{ label: '1. Вероятность и события', slug: 'probability/basics' },
+						{ label: '2. Случайные величины', slug: 'probability/random-variables' },
+						{ label: '3. Распределения', slug: 'probability/distributions' },
+						{ label: '4. Теорема Байеса', slug: 'probability/bayes' },
+						{ label: '5. Матожидание и дисперсия', slug: 'probability/expectation' },
+						{ label: '★ Задания', slug: 'probability/exercises' },
+					],
+				},
+				{
+					label: 'Статистика',
+					items: [
+						{ label: 'Обзор', slug: 'statistics' },
+						{ label: '1. Описательная статистика', slug: 'statistics/descriptive' },
+						{ label: '2. Выборки и оценивание', slug: 'statistics/estimation' },
+						{ label: '3. Доверительные интервалы', slug: 'statistics/confidence-intervals' },
+						{ label: '4. Проверка гипотез', slug: 'statistics/hypothesis-testing' },
+						{ label: '5. Корреляция и регрессия', slug: 'statistics/regression' },
+						{ label: '★ Задания', slug: 'statistics/exercises' },
+					],
+				},
+				{
+					label: 'Python и данные',
+					items: [
+						{ label: 'Обзор', slug: 'python-data' },
+						{ label: '1. Python для данных', slug: 'python-data/python-basics' },
+						{ label: '2. NumPy', slug: 'python-data/numpy' },
+						{ label: '3. pandas', slug: 'python-data/pandas' },
+						{ label: '4. Визуализация', slug: 'python-data/visualization' },
+						{ label: '5. Подготовка данных', slug: 'python-data/data-prep' },
+						{ label: '★ Задания', slug: 'python-data/exercises' },
+					],
+				},
+				{
+					label: 'Машинное обучение',
+					items: [
+						{ label: 'Обзор курса', slug: 'machine-learning' },
+						{ label: '1. Что такое ML', slug: 'machine-learning/intro' },
+						{ label: '2. Виды обучения', slug: 'machine-learning/types' },
+						{ label: '3. Рабочий процесс', slug: 'machine-learning/workflow' },
+						{ label: '4. Линейные модели', slug: 'machine-learning/linear-models' },
+						{ label: '5. Деревья и ансамбли', slug: 'machine-learning/trees-ensembles' },
+						{ label: '6. Другие алгоритмы', slug: 'machine-learning/other-algorithms' },
+						{ label: '7. Оценка моделей', slug: 'machine-learning/evaluation' },
+						{ label: '8. Признаки', slug: 'machine-learning/feature-engineering' },
+						{ label: '9. Нейронные сети', slug: 'machine-learning/neural-networks' },
+						{ label: '10. Практика scikit-learn', slug: 'machine-learning/practice' },
+						{ label: '★ Задания', slug: 'machine-learning/exercises' },
+						{ label: 'Глоссарий и ссылки', slug: 'machine-learning/glossary' },
 					],
 				},
 				{

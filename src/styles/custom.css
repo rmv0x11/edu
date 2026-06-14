@@ -63,9 +63,20 @@
 	padding-inline-end: 1rem;
 	color: var(--sl-color-white);
 }
+.glossary-popover__head {
+	margin-bottom: 0.4rem;
+	padding-inline-end: 1rem;
+}
 .glossary-popover__term {
 	color: var(--sl-color-text-accent);
 	font-weight: 600;
+}
+.glossary-popover__full {
+	color: var(--sl-color-white);
+	font-weight: 600;
+}
+.glossary-popover__def {
+	color: var(--sl-color-text);
 }
 .glossary-popover__close {
 	position: absolute;
