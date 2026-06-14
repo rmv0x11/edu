@@ -76,6 +76,18 @@ export default defineConfig({
 			},
 			lastUpdated: true,
 			customCss: ['./src/styles/custom.css'],
+			components: {
+				// Шапка с кнопками сворачивания левой/правой панели
+				Header: './src/components/Header.astro',
+			},
+			head: [
+				{
+					// Применяем сохранённое состояние панелей до отрисовки (без мигания)
+					tag: 'script',
+					content:
+						"try{var d=document.documentElement;if(localStorage.getItem('edu:hide-left')==='1')d.setAttribute('data-user-hide-left','');if(localStorage.getItem('edu:hide-right')==='1')d.setAttribute('data-user-hide-right','');}catch(e){}",
+				},
+			],
 			tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
 			sidebar: [
 				{

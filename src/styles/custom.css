@@ -29,3 +29,31 @@
 	justify-content: center;
 	margin: 1.25rem 0;
 }
+
+/* ===== Сворачивание боковых панелей (только десктоп; мобайл не трогаем) =====
+   Кнопки в шапке (см. src/components/Header.astro) ставят на <html> атрибуты
+   data-user-hide-left / data-user-hide-right. Здесь мы прячем нужную панель и
+   пересчитываем отступ/ширину контента, переопределяя те же переменные
+   Starlight, на которых держится раскладка. */
+
+/* Левая навигация (десктоп начинается с 50rem) */
+@media (min-width: 50rem) {
+	:root[data-user-hide-left] .sidebar {
+		display: none !important;
+	}
+	/* убираем зарезервированный под сайдбар отступ — контент и шапка съезжают влево */
+	:root[data-user-hide-left] {
+		--sl-content-inline-start: 0rem !important;
+	}
+}
+
+/* Правое оглавление «На этой странице» (показывается с 72rem) */
+@media (min-width: 72rem) {
+	:root[data-user-hide-right] .right-sidebar-container {
+		display: none !important;
+	}
+	:root[data-user-hide-right] .main-pane {
+		width: 100% !important;
+		--sl-content-margin-inline: auto !important;
+	}
+}
