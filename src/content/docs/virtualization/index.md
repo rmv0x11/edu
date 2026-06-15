@@ -19,6 +19,8 @@ sidebar:
 - Чем гипервизоры **Type-1** отличаются от **Type-2** и где какой применяется.
 - Как виртуализируется **CPU**: проблема привилегированных инструкций, кольца защиты,
   бинарная трансляция и аппаратные расширения **Intel VT-x / AMD-V**.
+- Как устроена **оперативная память** без виртуализации: страничная организация,
+  многоуровневые таблицы страниц, **MMU**, **TLB** и обработка **page fault**.
 - Как работает виртуализация **памяти**: теневые таблицы страниц и аппаратные
   **EPT / NPT**.
 - Как устроена виртуализация **ввода-вывода**: эмуляция, **virtio**, проброс устройств и
@@ -35,13 +37,14 @@ sidebar:
 | 1 | [Введение и история](/virtualization/intro/) | Понятие, мотивация, эволюция от мейнфреймов до облаков |
 | 2 | [Гипервизоры: Type-1 и Type-2](/virtualization/hypervisors/) | Классификация, критерии Попека–Голдберга |
 | 3 | [Виртуализация CPU](/virtualization/cpu/) | Кольца защиты, бинарная трансляция, VT-x/AMD-V |
-| 4 | [Виртуализация памяти](/virtualization/memory/) | Теневые таблицы, EPT/NPT, баллунинг |
-| 5 | [Виртуализация ввода-вывода](/virtualization/io/) | Эмуляция, virtio, passthrough, SR-IOV |
-| 6 | [Паравиртуализация](/virtualization/paravirtualization/) | Hypercall'ы, Xen PV, drivers |
-| 7 | [Контейнеры vs виртуальные машины](/virtualization/containers-vs-vm/) | Изоляция, накладные расходы, сценарии |
-| 8 | [KVM/QEMU на практике](/virtualization/kvm-qemu/) | Архитектура стека, запуск VM, libvirt |
-| 9 | [Обзор платформ](/virtualization/platforms/) | ESXi, Hyper-V, Xen, KVM — сравнение |
-| 10 | [Глоссарий и ссылки](/virtualization/glossary/) | Термины и первоисточники |
+| 4 | [Как устроена оперативная память](/virtualization/memory-basics/) | Страничная организация, таблицы страниц PML4→PT, MMU, TLB, page fault, своп |
+| 5 | [Виртуализация памяти](/virtualization/memory/) | Теневые таблицы, EPT/NPT, баллунинг |
+| 6 | [Виртуализация ввода-вывода](/virtualization/io/) | Эмуляция, virtio, passthrough, SR-IOV |
+| 7 | [Паравиртуализация](/virtualization/paravirtualization/) | Hypercall'ы, Xen PV, drivers |
+| 8 | [Контейнеры vs виртуальные машины](/virtualization/containers-vs-vm/) | Изоляция, накладные расходы, сценарии |
+| 9 | [KVM/QEMU на практике](/virtualization/kvm-qemu/) | Архитектура стека, запуск VM, libvirt |
+| 10 | [Обзор платформ](/virtualization/platforms/) | ESXi, Hyper-V, Xen, KVM — сравнение |
+| 11 | [Глоссарий и ссылки](/virtualization/glossary/) | Термины и первоисточники |
 
 ## Кому подойдёт
 
